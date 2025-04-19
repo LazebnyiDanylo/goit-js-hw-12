@@ -29,6 +29,7 @@ async function submitForm(event) {
     const response = await getImagesByQuery(query, page);
     totalPages = Math.ceil(response.data.totalHits / response.data.hits.length);
     if (response.data.hits.length === 0) {
+      render.hideLoadMoreButton();
       render.hideLoader();
       form.reset();
       return iziToast.error({

@@ -27,20 +27,31 @@ async function submitForm(event) {
 
   try {
     const response = await getImagesByQuery(query, page);
-    totalPages = Math.ceil(response.data.totalHits / response.data.hits.length);
-    if (response.data.hits.length === 0) {
+    totalPages = Math.ceil(response.totalHits / response.hits.length);
+
+    if (response.hits.length === 0) {
       render.hideLoadMoreButton();
       render.hideLoader();
       form.reset();
-      return iziToast.error({
+      return iziToast.info({
         title: 'Error',
         message:
           'Sorry, there are no images matching your search query. Please try again!',
         position: 'topRight',
       });
     }
-    render.createGallery(response.data.hits);
+
+    render.createGallery(response.hits);
     render.hideLoader();
+
+    if (page >= totalPages) {
+      return iziToast.info({
+        title: 'Caution',
+        message: "We're sorry, but you've reached the end of search results.",
+        position: 'topRight',
+      });
+    }
+
     render.showLoadMoreButton();
   } catch (error) {
     return console.log(error.message);
@@ -55,9 +66,8 @@ async function loadMore() {
 
   try {
     const response = await getImagesByQuery(query, page);
-    render.createGallery(response.data.hits);
+    render.createGallery(response.hits);
     render.hideLoader();
-    render.showLoadMoreButton();
 
     const item = document.querySelector('.gallery-item');
     const itemHeight = item.getBoundingClientRect().height;
@@ -69,13 +79,13 @@ async function loadMore() {
     });
 
     if (page >= totalPages) {
-      render.hideLoadMoreButton();
-      iziToast.warning({
+      return iziToast.info({
         title: 'Caution',
         message: "We're sorry, but you've reached the end of search results.",
         position: 'topRight',
       });
     }
+    render.showLoadMoreButton();
   } catch (error) {
     return console.log(error.message);
   }
